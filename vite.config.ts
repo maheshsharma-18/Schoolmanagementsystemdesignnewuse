@@ -2,6 +2,17 @@
   import { defineConfig } from 'vite';
   import react from '@vitejs/plugin-react-swc';
   import path from 'path';
+  import { webcrypto } from 'node:crypto';
+
+  // Ensure Web Crypto API is available when Vite executes under Node.
+  if (!globalThis.crypto) {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: webcrypto,
+      configurable: false,
+      enumerable: false,
+      writable: false,
+    });
+  }
 
   export default defineConfig({
     plugins: [react()],

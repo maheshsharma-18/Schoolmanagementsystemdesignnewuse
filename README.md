@@ -1,7 +1,8 @@
 
-  # School Management System Design
+  # tokitech 
 
-  This is a code bundle for School Management System Design. The original project is available at https://www.figma.com/design/4IV35LEHirKsqjHiDlYFpn/School-Management-System-Design.
+  frontend of the tokitech
+  
 
   ## Running the code
 
