@@ -28,7 +28,7 @@
         'next-themes@0.4.6': 'next-themes',
         'lucide-react@0.487.0': 'lucide-react',
         'input-otp@1.4.2': 'input-otp',
-        'figma:asset/542a27157e7f37147ee1c5ffd15096589b5daa9c.png': path.resolve(__dirname, './src/assets/542a27157e7f37147ee1c5ffd15096589b5daa9c.png'),
+        'figma:asset/542a27157e7f37147ee1c5ffd15096589b5daa9c.png': path.resolve(__dirname, './src/assets/TOKI_LOGO.png'),
         'embla-carousel-react@8.6.0': 'embla-carousel-react',
         'cmdk@1.1.1': 'cmdk',
         'class-variance-authority@0.7.1': 'class-variance-authority',

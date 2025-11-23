@@ -186,36 +186,37 @@ export const Layout = ({ children, currentView, onNavigate }: LayoutProps) => {
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } fixed lg:static lg:translate-x-0 left-0 top-14 h-[calc(100vh-3.5rem)] w-64 bg-white border-r transition-transform duration-200 ease-in-out z-40`}
         >
-          <ScrollArea className="h-full py-4">
-            <nav className="space-y-1 px-3">
-              {navigationItems.map(item => {
-                const Icon = item.icon;
-                return (
-                  <Button
-                    key={item.id}
-                    variant={currentView === item.id ? 'secondary' : 'ghost'}
-                    className="w-full justify-start gap-3"
-                    onClick={() => {
-                      onNavigate(item.id);
-                      if (window.innerWidth < 1024) setSidebarOpen(false);
-                    }}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.label}
-                  </Button>
-                );
-              })}
-            </nav>
-          </ScrollArea>
-          
-          <div className="absolute bottom-4 left-0 right-0 px-3 border-t pt-4">
-            <div className="flex flex-col items-center text-xs text-muted-foreground gap-2">
-              <p>{t('login.poweredBy')}</p>
-              <img 
-                src={tokiLogo} 
-                alt="Toki Tech" 
-                className="h-8 w-auto"
-              />
+          <div className="flex h-full flex-col">
+            <div className="flex-1 overflow-hidden py-4">
+              <nav className="space-y-1 px-3">
+                {navigationItems.map(item => {
+                  const Icon = item.icon;
+                  return (
+                    <Button
+                      key={item.id}
+                      variant={currentView === item.id ? 'secondary' : 'ghost'}
+                      className="w-full justify-start gap-3"
+                      onClick={() => {
+                        onNavigate(item.id);
+                        if (window.innerWidth < 1024) setSidebarOpen(false);
+                      }}
+                    >
+                      <Icon className="h-5 w-5" />
+                      {item.label}
+                    </Button>
+                  );
+                })}
+              </nav>
+            </div>
+            <div className="px-3 border-t pt-4 pb-6">
+              <div className="flex flex-col items-center text-xs text-muted-foreground gap-2">
+                <p>{t('login.poweredBy')}</p>
+                <img 
+                  src={tokiLogo} 
+                  alt="Toki Tech" 
+                  className="h-8 w-auto"
+                />
+              </div>
             </div>
           </div>
         </aside>

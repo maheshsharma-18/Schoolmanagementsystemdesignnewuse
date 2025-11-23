@@ -429,18 +429,7 @@ export const Login = () => {
                           ? "Test Credentials:"
                           : "పరీక్ష ప్రమాణాలు:"}
                       </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs">
-                        <p>Super Admin: +919999999999</p>
-                        <p>Principal: +919876543210</p>
-                        <p>Teacher: +919876543214</p>
-                        <p>Class Teacher: +919876543212</p>
-                        <p>Fleet Manager: +919876543217</p>
-                      </div>
-                      <p className="pt-2">
-                        {language === "en"
-                          ? "OTP: Any 6 digits"
-                          : "OTP: ఏదైనా 6 అంకెలు"}
-                      </p>
+                      
                     </div>
 
                     <div className="flex justify-center md:justify-start gap-2 items-center text-xs text-muted-foreground pt-4">
