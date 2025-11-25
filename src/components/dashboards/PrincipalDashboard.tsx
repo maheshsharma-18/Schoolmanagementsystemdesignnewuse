@@ -26,6 +26,15 @@ import { StatsCard, GradientStatsCard } from '../StatsCard';
 import { CircularProgress, GaugeChart } from '../CircularProgress';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { 
+  students, 
+  users, 
+  events, 
+  attendanceRecords, 
+  grades, 
+  tickets, 
+  busTrips 
+} from '../../data/mockData';
 
 interface PrincipalDashboardProps {
   onNavigate: (view: string) => void;
@@ -72,6 +81,79 @@ export const PrincipalDashboard = ({ onNavigate }: PrincipalDashboardProps) => {
     fetchDashboardData();
   }, []);
 
+  const getMockDashboardData = (): DashboardData => {
+    const totalStudents = students.length;
+    const totalTeachers = users.filter(u => u.role === 'class_teacher' || u.role === 'subject_teacher').length;
+    const totalClasses = 12; 
+    const totalFleetVehicles = busTrips.length;
+    const totalWorkDays = 220;
+    const totalHolidays = events.filter(e => e.category === 'holiday').length;
+    const pendingApprovals = grades.filter(g => !g.approvedByPrincipal).length;
+    const activeTickets = tickets.filter(t => t.status !== 'resolved').length;
+    
+    const present = attendanceRecords.filter(a => a.status === 'present').length;
+    const absent = attendanceRecords.filter(a => a.status === 'absent').length;
+    const totalAttendance = present + absent;
+    const percentage = totalAttendance > 0 ? Math.round((present / totalAttendance) * 100) : 0;
+
+    return {
+      totalStudents,
+      totalTeachers,
+      totalClasses,
+      totalFleetVehicles,
+      totalWorkDays,
+      totalHolidays,
+      pendingApprovals,
+      activeTickets,
+      todayAttendance: {
+        present,
+        absent,
+        total: totalAttendance,
+        percentage
+      },
+      classesMarkedAttendance: 8,
+      classesNotMarkedAttendance: 4,
+      fleetActive: busTrips.filter(t => t.status !== 'completed').length,
+      fleetCompleted: busTrips.filter(t => t.status === 'completed').length,
+      upcomingEvents: events.slice(0, 5),
+      recentActivities: [
+        ...tickets.slice(0, 2).map(t => ({ type: 'ticket', title: t.title, description: t.description, time: '2h ago' })),
+        ...grades.slice(0, 2).map(g => ({ type: 'grade', title: `Grade: ${g.subject}`, description: `${g.marks}/100`, time: '4h ago' }))
+      ],
+      overallAttendance: [
+        { date: 'Mon', percentage: 92 },
+        { date: 'Tue', percentage: 88 },
+        { date: 'Wed', percentage: 95 },
+        { date: 'Thu', percentage: 90 },
+        { date: 'Fri', percentage: 85 },
+      ],
+      overallGrades: [
+        { subject: 'Math', average: 85 },
+        { subject: 'Science', average: 78 },
+        { subject: 'English', average: 82 },
+        { subject: 'History', average: 88 },
+      ],
+      top3HighestAttendance: [
+        { name: 'Class 10A', percentage: 98 },
+        { name: 'Class 9B', percentage: 96 },
+        { name: 'Class 8A', percentage: 95 },
+      ],
+      top3LowestAttendance: [
+        { name: 'Class 12C', percentage: 75 },
+        { name: 'Class 11A', percentage: 78 },
+        { name: 'Class 10B', percentage: 80 },
+      ],
+      missedCutoffClasses: [],
+      consecutiveAbsent: students.slice(0, 2).map(s => ({
+        name: s.name,
+        class: s.class,
+        section: s.section,
+        rollNo: s.rollNumber,
+        consecutiveDays: 3
+      }))
+    };
+  };
+
   const fetchDashboardData = async () => {
     try {
       const response = await fetch(
@@ -87,9 +169,12 @@ export const PrincipalDashboard = ({ onNavigate }: PrincipalDashboardProps) => {
       if (response.ok) {
         const data = await response.json();
         setDashboardData(data);
+      } else {
+        throw new Error('Failed to fetch');
       }
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error('Error fetching dashboard data, falling back to mock data:', error);
+      setDashboardData(getMockDashboardData());
     } finally {
       setLoading(false);
     }
