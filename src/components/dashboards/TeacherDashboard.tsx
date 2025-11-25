@@ -19,7 +19,13 @@ import { Badge } from '../ui/badge';
 import { StatsCard, GradientStatsCard } from '../StatsCard';
 import { CircularProgress } from '../CircularProgress';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { 
+  users, 
+  grades, 
+  homeworks, 
+  timetables, 
+  attendanceRecords 
+} from '../../data/mockData';
 
 interface TeacherDashboardProps {
   onNavigate: (view: string) => void;
@@ -71,31 +77,110 @@ export const TeacherDashboard = ({ onNavigate }: TeacherDashboardProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
-    try {
-      const response = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/make-server-2f5f0fc8/dashboard/teacher`,
-        {
-          headers: {
-            'Authorization': `Bearer ${publicAnonKey}`,
-            'Content-Type': 'application/json',
-          },
+    // Simulate API delay
+    const loadData = async () => {
+      try {
+        // Get current teacher or fallback to 'st1'
+        const teacherId = user?.id || 'st1';
+        const teacher = users.find(u => u.id === teacherId) || users.find(u => u.role === 'subject_teacher');
+        
+        if (!teacher) {
+            setLoading(false);
+            return;
         }
-      );
 
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
+        // Calculate stats from mock data
+        const teacherClasses = teacher.assignedClasses || [];
+        const teacherSubjects = teacher.assignedSubjects || [];
+
+        // 1. Calculate Average Score & Trend
+        const teacherGrades = grades.filter(g => 
+            teacherSubjects.includes(g.subject)
+        );
+        const avgScore = teacherGrades.length > 0 
+            ? Math.round(teacherGrades.reduce((acc, curr) => acc + curr.marks, 0) / teacherGrades.length) 
+            : 0;
+
+        // 2. Subject Performance
+        const subjectPerformance = teacherSubjects.map(subject => {
+            const subjectGrades = grades.filter(g => g.subject === subject);
+            const subjectAvg = subjectGrades.length > 0
+                ? Math.round(subjectGrades.reduce((acc, curr) => acc + curr.marks, 0) / subjectGrades.length)
+                : 0;
+            
+            return {
+                name: subject,
+                classes: teacherClasses,
+                average: subjectAvg,
+                schoolAverage: 75 // Mock school average
+            };
+        });
+
+        // 3. Recent Activities
+        const recentActivities = [
+            ...teacherGrades.slice(0, 2).map(g => ({
+                type: 'grade',
+                title: `Grades Entered: ${g.subject}`,
+                description: `${g.examCycle} marks updated`,
+                time: '2 hours ago'
+            })),
+            ...homeworks.filter(h => h.uploadedBy === teacherId).slice(0, 2).map(h => ({
+                type: 'homework',
+                title: `Homework Assigned: ${h.subject}`,
+                description: h.title,
+                time: '1 day ago'
+            }))
+        ];
+
+        // 4. Recent Homework
+        const recentHomework = homeworks
+            .filter(h => h.uploadedBy === teacherId)
+            .slice(0, 3)
+            .map(h => ({
+                subject: h.subject,
+                class: `${h.class}${h.section}`,
+                title: h.title,
+                dueDate: h.dueDate,
+                submissions: 25 // Mock submission count
+            }));
+
+        // 5. Upcoming Classes
+        const upcomingClasses = timetables
+            .filter(tt => tt.teacherId === teacherId)
+            .slice(0, 3)
+            .map(tt => ({
+                time: `${9 + tt.period}:00 AM`, // Mock time based on period
+                period: `Period ${tt.period}`,
+                subject: tt.subject,
+                class: `${tt.class}${tt.section}`,
+                room: 'Room 101' // Mock room
+            }));
+
+        setDashboardData({
+          teacherInfo: {
+            name: teacher.name,
+            subjects: teacherSubjects,
+            classes: teacherClasses,
+            averageScore: avgScore,
+            trend: 'up',
+            trendValue: 5
+          },
+          subjectPerformance,
+          recentActivities,
+          recentHomework,
+          upcomingClasses,
+          attendanceMarked: attendanceRecords.filter(a => a.recordedBy === teacherId && a.date === '2025-10-20').length,
+          gradesEntered: teacherGrades.length
+        });
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadData();
+  }, [user]);
 
   if (loading || !dashboardData) {
     return (
