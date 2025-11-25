@@ -34,10 +34,32 @@ interface DashboardData {
     trend: string;
     trendValue: number;
   };
-  subjectPerformance: any[];
-  recentActivities: any[];
-  recentHomework: any[];
-  upcomingClasses: any[];
+  subjectPerformance: {
+    name: string;
+    classes: string[];
+    average: number;
+    schoolAverage: number;
+  }[];
+  recentActivities: {
+    type: string;
+    title: string;
+    description: string;
+    time: string;
+  }[];
+  recentHomework: {
+    subject: string;
+    class: string;
+    title: string;
+    dueDate: string;
+    submissions: number;
+  }[];
+  upcomingClasses: {
+    time: string;
+    period: string;
+    subject: string;
+    class: string;
+    room: string;
+  }[];
   attendanceMarked: number;
   gradesEntered: number;
 }
@@ -86,7 +108,7 @@ export const TeacherDashboard = ({ onNavigate }: TeacherDashboardProps) => {
     );
   }
 
-  const teacherName = user?.user_metadata?.name || dashboardData.teacherInfo.name || 'Teacher';
+  const teacherName = user?.name || dashboardData.teacherInfo.name || 'Teacher';
 
   return (
     <div className="space-y-8 pb-8">
