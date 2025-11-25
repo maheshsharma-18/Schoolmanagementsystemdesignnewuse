@@ -22,6 +22,9 @@ import {
 } from 'lucide-react';
 import { GradientStatsCard, StatsCard } from '../StatsCard';
 import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { AddTeacherDialog } from '../dialogs/AddTeacherDialog';
+import { toast } from 'sonner';
+import { users } from '../../data/mockData';
 
 interface TeachersViewProps {
   onBack: () => void;
@@ -34,10 +37,30 @@ export function TeachersView({ onBack, onNavigate }: TeachersViewProps) {
   const [teachers, setTeachers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState<any>(null);
+  const [isAddTeacherOpen, setIsAddTeacherOpen] = useState(false);
 
   useEffect(() => {
     fetchTeachers();
   }, []);
+
+  const getMockTeachers = () => {
+    return users
+      .filter(u => u.role === 'class_teacher' || u.role === 'subject_teacher')
+      .map(u => ({
+        id: u.id,
+        name: u.name,
+        email: u.email || `${u.name.toLowerCase().replace(/\s/g, '.')}@school.edu`,
+        phone: u.phone,
+        isClassTeacher: u.role === 'class_teacher',
+        assignedClass: u.classTeacherFor,
+        subjects: u.assignedSubjects || [],
+        classes: u.assignedClasses || [],
+        averageScore: 85 + Math.floor(Math.random() * 10),
+        trend: Math.random() > 0.5 ? 'up' : 'down',
+        trendValue: Math.floor(Math.random() * 5),
+        employeeId: u.staffId
+      }));
+  };
 
   const fetchTeachers = async () => {
     try {
@@ -53,12 +76,20 @@ export function TeachersView({ onBack, onNavigate }: TeachersViewProps) {
       if (response.ok) {
         const data = await response.json();
         setTeachers(data.teachers || []);
+      } else {
+        throw new Error('Failed to fetch');
       }
     } catch (error) {
-      console.error('Error fetching teachers:', error);
+      console.error('Error fetching teachers, using mock data:', error);
+      setTeachers(getMockTeachers());
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddTeacher = (newTeacher: any) => {
+    setTeachers([...teachers, newTeacher]);
+    toast.success(language === 'en' ? 'Teacher added successfully' : 'ఉపాధ్యాయుడు విజయవంతంగా జోడించబడ్డారు');
   };
 
   if (loading) {
@@ -107,7 +138,7 @@ export function TeachersView({ onBack, onNavigate }: TeachersViewProps) {
             </p>
           </div>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAddTeacherOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           {language === 'en' ? 'Add New Teacher' : 'కొత్త ఉపాధ్యాయుడిని జోడించండి'}
         </Button>
@@ -123,6 +154,12 @@ export function TeachersView({ onBack, onNavigate }: TeachersViewProps) {
           className="pl-10"
         />
       </div>
+
+      <AddTeacherDialog 
+        open={isAddTeacherOpen} 
+        onOpenChange={setIsAddTeacherOpen} 
+        onAddTeacher={handleAddTeacher} 
+      />
 
       {/* Teachers Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -5,19 +5,28 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Badge } from '../ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { students, attendanceRecords } from '../../data/mockData';
+import { students as initialStudents, attendanceRecords } from '../../data/mockData';
 import { Users, Search, Download, Plus, Eye, ArrowLeft, Phone, Calendar, MapPin, User } from 'lucide-react';
+import { AddStudentDialog } from '../dialogs/AddStudentDialog';
+import { toast } from 'sonner';
 
 export const StudentsView = () => {
   const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState<typeof students[0] | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<typeof initialStudents[0] | null>(null);
+  const [studentsList, setStudentsList] = useState(initialStudents);
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
 
-  const filteredStudents = students.filter(student => 
+  const filteredStudents = studentsList.filter(student => 
     student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     student.rollNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (student.nameInTelugu && student.nameInTelugu.includes(searchQuery))
   );
+
+  const handleAddStudent = (newStudent: any) => {
+    setStudentsList([...studentsList, newStudent]);
+    toast.success(language === 'en' ? 'Student added successfully' : 'విద్యార్థి విజయవంతంగా జోడించబడ్డారు');
+  };
 
   const getStudentAttendanceRate = (studentId: string) => {
     const studentRecords = attendanceRecords.filter(r => r.studentId === studentId);
@@ -222,12 +231,18 @@ export const StudentsView = () => {
             <Download className="h-4 w-4" />
             {t('common.export')}
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setIsAddStudentOpen(true)}>
             <Plus className="h-4 w-4" />
             {language === 'en' ? 'Add Student' : 'విద్యార్థిని జోడించండి'}
           </Button>
         </div>
       </div>
+
+      <AddStudentDialog 
+        open={isAddStudentOpen} 
+        onOpenChange={setIsAddStudentOpen} 
+        onAddStudent={handleAddStudent} 
+      />
 
       {/* Search Bar */}
       <Card>

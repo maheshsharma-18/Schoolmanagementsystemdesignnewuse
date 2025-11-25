@@ -18,6 +18,57 @@ import {
 } from 'lucide-react';
 import { GradientStatsCard } from '../StatsCard';
 import { projectId, publicAnonKey } from '../../utils/supabase/info';
+import { AddClassDialog } from '../dialogs/AddClassDialog';
+import { AddStudentDialog } from '../dialogs/AddStudentDialog';
+import { toast } from 'sonner';
+
+// Mock data for classes fallback
+const mockClasses = [
+  {
+    id: 'c1',
+    name: '10',
+    section: 'A',
+    classTeacher: 'Ms. Radhika Suresh',
+    studentCount: 35,
+    attendanceRate: 92,
+    averageGrade: 85,
+    subjects: ['Mathematics', 'Physics', 'Chemistry', 'English', 'Social Studies'],
+    sections: ['A']
+  },
+  {
+    id: 'c2',
+    name: '10',
+    section: 'B',
+    classTeacher: 'Mr. Vikrant Desai',
+    studentCount: 32,
+    attendanceRate: 88,
+    averageGrade: 82,
+    subjects: ['Mathematics', 'Physics', 'Chemistry', 'English', 'Social Studies'],
+    sections: ['B']
+  },
+  {
+    id: 'c3',
+    name: '9',
+    section: 'A',
+    classTeacher: 'Mrs. Neelima Rao',
+    studentCount: 30,
+    attendanceRate: 95,
+    averageGrade: 78,
+    subjects: ['Mathematics', 'Science', 'English', 'Social Studies'],
+    sections: ['A']
+  },
+  {
+    id: 'c4',
+    name: '9',
+    section: 'B',
+    classTeacher: 'Mr. Abhinav Kapoor',
+    studentCount: 28,
+    attendanceRate: 90,
+    averageGrade: 80,
+    subjects: ['Mathematics', 'Science', 'English', 'Social Studies'],
+    sections: ['B']
+  }
+];
 
 interface ClassesViewProps {
   onBack: () => void;
@@ -29,6 +80,7 @@ export function ClassesView({ onBack }: ClassesViewProps) {
   const [classes, setClasses] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState<any>(null);
+  const [isAddClassOpen, setIsAddClassOpen] = useState(false);
 
   useEffect(() => {
     fetchClasses();
@@ -48,12 +100,20 @@ export function ClassesView({ onBack }: ClassesViewProps) {
       if (response.ok) {
         const data = await response.json();
         setClasses(data.classes || []);
+      } else {
+        throw new Error('Failed to fetch');
       }
     } catch (error) {
-      console.error('Error fetching classes:', error);
+      console.error('Error fetching classes, using mock data:', error);
+      setClasses(mockClasses);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddClass = (newClass: any) => {
+    setClasses([...classes, newClass]);
+    toast.success(language === 'en' ? 'Class added successfully' : 'తరగతి విజయవంతంగా జోడించబడింది');
   };
 
   if (loading) {
@@ -100,11 +160,17 @@ export function ClassesView({ onBack }: ClassesViewProps) {
             </p>
           </div>
         </div>
-        <Button className="bg-primary hover:bg-primary/90">
+        <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAddClassOpen(true)}>
           <Plus className="w-4 h-4 mr-2" />
           {language === 'en' ? 'Add New Class' : 'కొత్త తరగతి జోడించండి'}
         </Button>
       </div>
+
+      <AddClassDialog 
+        open={isAddClassOpen} 
+        onOpenChange={setIsAddClassOpen} 
+        onAddClass={handleAddClass} 
+      />
 
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -244,12 +310,18 @@ function ClassDetail({ classData, onBack }: ClassDetailProps) {
   const { language } = useLanguage();
   const [students, setStudents] = useState<any[]>([]);
   const [subjects, setSubjects] = useState<any[]>([]);
+  const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
 
   useEffect(() => {
     // In real implementation, fetch students and subjects for this class
     setStudents(classData.students || []);
     setSubjects(classData.subjectDetails || []);
   }, [classData.id]);
+
+  const handleAddStudent = (newStudent: any) => {
+    setStudents([...students, newStudent]);
+    toast.success(language === 'en' ? 'Student added successfully' : 'విద్యార్థి విజయవంతంగా జోడించబడ్డారు');
+  };
 
   return (
     <div className="space-y-6">
@@ -276,12 +348,18 @@ function ClassDetail({ classData, onBack }: ClassDetailProps) {
             <Edit className="w-4 h-4 mr-2" />
             {language === 'en' ? 'Edit Class' : 'తరగతిని సవరించండి'}
           </Button>
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button className="bg-primary hover:bg-primary/90" onClick={() => setIsAddStudentOpen(true)}>
             <UserPlus className="w-4 h-4 mr-2" />
             {language === 'en' ? 'Add Student' : 'విద్యార్థిని జోడించండి'}
           </Button>
         </div>
       </div>
+
+      <AddStudentDialog 
+        open={isAddStudentOpen} 
+        onOpenChange={setIsAddStudentOpen} 
+        onAddStudent={handleAddStudent} 
+      />
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -365,7 +443,7 @@ function ClassDetail({ classData, onBack }: ClassDetailProps) {
               {language === 'en' ? 'Students' : 'విద్యార్థులు'}
             </CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => setIsAddStudentOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 {language === 'en' ? 'Add Student' : 'విద్యార్థిని జోడించండి'}
               </Button>
